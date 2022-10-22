@@ -1,15 +1,15 @@
 # CozySocket
 
-> Socket handling library for Elixir.
+> A socket handling library.
 
 This library wraps `gen_tcp`, `gen_udp` and `gen_sctp`, `ssl` and implements
 websockets and socks.
 
 ## Installation
 
-Add `:cozy_socket` to `mix.exs`:
+Adding `cozy_lark` to your list of dependencies in `mix.exs`:
 
-```
+```elixir
 defp deps do
   [
     {:cozy_socket, "~> 0.3"},
@@ -18,6 +18,8 @@ end
 ```
 
 ## Usage
+
+For more information, see the [documentation](https://hexdocs.pm/cozy_socket).
 
 ### HTTP
 
@@ -103,3 +105,7 @@ client |> CozySocket.Web.accept!
 # echo the first message
 client |> CozySocket.Web.send!(client |> CozySocket.Web.recv!)
 ```
+
+# License
+
+Apache License 2.0

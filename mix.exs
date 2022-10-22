@@ -1,13 +1,22 @@
-defmodule CozySocket.Mixfile do
+defmodule CozySocket.MixProject do
   use Mix.Project
+
+  @version "0.3.13"
+  @description "A socket handling library."
+  @source_url "https://github.com/cozy-elixir/cozy_socket"
 
   def project do
     [
       app: :cozy_socket,
-      version: "0.3.13",
+      version: @version,
+      elixir: "~> 1.13",
       deps: deps(),
+      description: @description,
+      source_url: @source_url,
+      homepage_url: @source_url,
+      docs: docs(),
       package: package(),
-      description: "Socket handling library for Elixir"
+      aliases: aliases()
     ]
   end
 
@@ -16,14 +25,35 @@ defmodule CozySocket.Mixfile do
   end
 
   defp deps do
-    [{:ex_doc, "~> 0.18", only: [:dev]}]
+    [
+      {:ex_doc, "~> 0.25", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      extras: ["README.md"],
+      main: "readme",
+      source_url: @source_url,
+      source_ref: @version
+    ]
   end
 
   defp package do
     [
-      maintainers: ["meh"],
-      licenses: ["WTFPL"],
-      links: %{"GitHub" => "https://github.com/meh/elixir-socket"}
+      exclude_patterns: [],
+      licenses: ["Apache-2.0"],
+      links: %{GitHub: @source_url}
     ]
+  end
+
+  defp aliases do
+    [publish: ["hex.publish", "tag"], tag: &tag_release/1]
+  end
+
+  defp tag_release(_) do
+    Mix.shell().info("Tagging release as #{@version}")
+    System.cmd("git", ["tag", @version])
+    System.cmd("git", ["push", "--tags"])
   end
 end
