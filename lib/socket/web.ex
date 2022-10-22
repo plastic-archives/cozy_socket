@@ -31,7 +31,7 @@ defmodule Socket.Web do
 
   """
 
-  use Bitwise
+  import Bitwise
   import Kernel, except: [length: 1, send: 2]
   alias __MODULE__, as: W
 
