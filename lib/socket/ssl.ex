@@ -42,9 +42,9 @@ defmodule Socket.SSL do
   @doc """
   Get the list of supported ciphers.
   """
-  @spec ciphers :: [:ssl.erl_cipher_suite()]
-  def ciphers do
-    :ssl.cipher_suites()
+  @spec ciphers(:ssl.protocol_version()) :: [:ssl.ciphers()]
+  def ciphers(version) do
+    :ssl.cipher_suites(:all, version)
   end
 
   @doc """
