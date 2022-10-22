@@ -1,9 +1,9 @@
-defmodule Socket.Mixfile do
+defmodule CozySocket.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :socket,
+      app: :cozy_socket,
       version: "0.3.13",
       deps: deps(),
       package: package(),
@@ -11,7 +11,6 @@ defmodule Socket.Mixfile do
     ]
   end
 
-  # Configuration for the OTP application
   def application do
     [applications: [:crypto, :ssl]]
   end

@@ -1,4 +1,4 @@
-defprotocol Socket.Stream.Protocol do
+defprotocol CozySocket.Stream.Protocol do
   @doc """
   Send data through the socket.
   """
@@ -43,34 +43,34 @@ defprotocol Socket.Stream.Protocol do
   def close(self)
 end
 
-defmodule Socket.Stream do
-  @type t :: Socket.Stream.Protocol.t()
+defmodule CozySocket.Stream do
+  @type t :: CozySocket.Stream.Protocol.t()
 
-  use Socket.Helpers
+  use CozySocket.Helpers
   import Kernel, except: [send: 2]
 
-  defdelegate send(self, data), to: Socket.Stream.Protocol
-  defbang(send(self, data), to: Socket.Stream.Protocol)
+  defdelegate send(self, data), to: CozySocket.Stream.Protocol
+  defbang(send(self, data), to: CozySocket.Stream.Protocol)
 
-  defdelegate file(self, path), to: Socket.Stream.Protocol
-  defbang(file(self, path), to: Socket.Stream.Protocol)
-  defdelegate file(self, path, options), to: Socket.Stream.Protocol
-  defbang(file(self, path, options), to: Socket.Stream.Protocol)
+  defdelegate file(self, path), to: CozySocket.Stream.Protocol
+  defbang(file(self, path), to: CozySocket.Stream.Protocol)
+  defdelegate file(self, path, options), to: CozySocket.Stream.Protocol
+  defbang(file(self, path, options), to: CozySocket.Stream.Protocol)
 
-  defdelegate recv(self), to: Socket.Stream.Protocol
-  defbang(recv(self), to: Socket.Stream.Protocol)
-  defdelegate recv(self, length_or_options), to: Socket.Stream.Protocol
-  defbang(recv(self, length_or_options), to: Socket.Stream.Protocol)
-  defdelegate recv(self, length, options), to: Socket.Stream.Protocol
-  defbang(recv(self, length, options), to: Socket.Stream.Protocol)
+  defdelegate recv(self), to: CozySocket.Stream.Protocol
+  defbang(recv(self), to: CozySocket.Stream.Protocol)
+  defdelegate recv(self, length_or_options), to: CozySocket.Stream.Protocol
+  defbang(recv(self, length_or_options), to: CozySocket.Stream.Protocol)
+  defdelegate recv(self, length, options), to: CozySocket.Stream.Protocol
+  defbang(recv(self, length, options), to: CozySocket.Stream.Protocol)
 
-  defdelegate shutdown(self), to: Socket.Stream.Protocol
-  defbang(shutdown(self), to: Socket.Stream.Protocol)
-  defdelegate shutdown(self, how), to: Socket.Stream.Protocol
-  defbang(shutdown(self, how), to: Socket.Stream.Protocol)
+  defdelegate shutdown(self), to: CozySocket.Stream.Protocol
+  defbang(shutdown(self), to: CozySocket.Stream.Protocol)
+  defdelegate shutdown(self, how), to: CozySocket.Stream.Protocol
+  defbang(shutdown(self, how), to: CozySocket.Stream.Protocol)
 
-  defdelegate close(self), to: Socket.Stream.Protocol
-  defbang(close(self), to: Socket.Stream.Protocol)
+  defdelegate close(self), to: CozySocket.Stream.Protocol
+  defbang(close(self), to: CozySocket.Stream.Protocol)
 
   @doc """
   Read from the IO device and send to the socket following the given options.
@@ -135,7 +135,7 @@ defmodule Socket.Stream do
   defbang(io(self, io, options))
 end
 
-defimpl Socket.Stream.Protocol, for: Port do
+defimpl CozySocket.Stream.Protocol, for: Port do
   def send(self, data) do
     :gen_tcp.send(self, data)
   end
@@ -198,7 +198,7 @@ defimpl Socket.Stream.Protocol, for: Port do
   end
 end
 
-defimpl Socket.Stream.Protocol, for: Tuple do
+defimpl CozySocket.Stream.Protocol, for: Tuple do
   require Record
 
   def send(self, data) when self |> Record.is_record(:sslsocket) do
@@ -226,7 +226,7 @@ defimpl Socket.Stream.Protocol, for: Tuple do
     case File.open!(
            path,
            [:read],
-           &Socket.Stream.io(self, &1, offset: offset, size: size, chunk_size: chunk_size)
+           &CozySocket.Stream.io(self, &1, offset: offset, size: size, chunk_size: chunk_size)
          ) do
       {:ok, :ok} ->
         :ok

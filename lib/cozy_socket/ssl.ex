@@ -1,4 +1,4 @@
-defmodule Socket.SSL do
+defmodule CozySocket.SSL do
   @moduledoc """
   This module allows usage of SSL sockets and promotion of TCP sockets to SSL
   sockets.
@@ -30,11 +30,11 @@ defmodule Socket.SSL do
 
   Normally sockets in Erlang are closed when the controlling process exits,
   with smart garbage collection the controlling process will be the
-  `Socket.Manager` and it will be closed when there are no more references to
+  `CozySocket.Manager` and it will be closed when there are no more references to
   it.
   """
 
-  use Socket.Helpers
+  use CozySocket.Helpers
   require Record
 
   @opaque t :: port
@@ -73,7 +73,8 @@ defmodule Socket.SSL do
   @doc """
   Connect to the given address and port tuple or SSL connect the given socket.
   """
-  @spec connect(Socket.t() | {Socket.t(), :inet.port_number()}) :: {:ok, t} | {:error, term}
+  @spec connect(CozySocket.t() | {CozySocket.t(), :inet.port_number()}) ::
+          {:ok, t} | {:error, term}
   def connect({address, port}) do
     connect(address, port)
   end
@@ -86,7 +87,7 @@ defmodule Socket.SSL do
   Connect to the given address and port tuple or SSL connect the given socket,
   raising if an error occurs.
   """
-  @spec connect!(Socket.t() | {Socket.t(), :inet.port_number()}) :: t | no_return
+  @spec connect!(CozySocket.t() | {CozySocket.t(), :inet.port_number()}) :: t | no_return
   defbang(connect(socket_or_descriptor))
 
   @doc """
@@ -95,7 +96,7 @@ defmodule Socket.SSL do
   address and port.
   """
   @spec connect(
-          {Socket.Address.t(), :inet.port_number()} | Socket.t() | Socket.Address.t(),
+          {CozySocket.Address.t(), :inet.port_number()} | CozySocket.t() | CozySocket.Address.t(),
           Keyword.t() | :inet.port_number()
         ) :: {:ok, t} | {:error, term}
   def connect({address, port}, options) when options |> is_list do
@@ -126,7 +127,7 @@ defmodule Socket.SSL do
   address and port, raising if an error occurs.
   """
   @spec connect!(
-          {Socket.Address.t(), :inet.port_number()} | Socket.t() | Socket.Address.t(),
+          {CozySocket.Address.t(), :inet.port_number()} | CozySocket.t() | CozySocket.Address.t(),
           Keyword.t() | :inet.port_number()
         ) :: t | no_return
   defbang(connect(descriptor, options))
@@ -134,7 +135,8 @@ defmodule Socket.SSL do
   @doc """
   Connect to the given address and port with the given options.
   """
-  @spec connect(Socket.Address.t(), :inet.port_number(), Keyword.t()) :: {:ok, t} | {:error, term}
+  @spec connect(CozySocket.Address.t(), :inet.port_number(), Keyword.t()) ::
+          {:ok, t} | {:error, term}
   def connect(address, port, options) do
     address =
       if address |> is_binary do
@@ -153,7 +155,7 @@ defmodule Socket.SSL do
   Connect to the given address and port with the given options, raising if an
   error occurs.
   """
-  @spec connect!(Socket.Address.t(), :inet.port_number(), Keyword.t()) :: t | no_return
+  @spec connect!(CozySocket.Address.t(), :inet.port_number(), Keyword.t()) :: t | no_return
   defbang(connect(address, port, options))
 
   @doc """
@@ -214,7 +216,7 @@ defmodule Socket.SSL do
   Accept a connection from a listening SSL socket or start an SSL connection on
   the given client socket.
   """
-  @spec accept(Socket.t() | t) :: {:ok, t} | {:error, term}
+  @spec accept(CozySocket.t() | t) :: {:ok, t} | {:error, term}
   def accept(self) do
     accept(self, [])
   end
@@ -223,14 +225,14 @@ defmodule Socket.SSL do
   Accept a connection from a listening SSL socket or start an SSL connection on
   the given client socket, raising if an error occurs.
   """
-  @spec accept!(Socket.t() | t) :: t | no_return
+  @spec accept!(CozySocket.t() | t) :: t | no_return
   defbang(accept(socket))
 
   @doc """
   Accept a connection from a listening SSL socket with the given options or
   start an SSL connection on the given client socket with the given options.
   """
-  @spec accept(Socket.t(), Keyword.t()) :: {:ok, t} | {:error, term}
+  @spec accept(CozySocket.t(), Keyword.t()) :: {:ok, t} | {:error, term}
   def accept(socket, options) when socket |> Record.is_record(:sslsocket) do
     timeout = options[:timeout] || :infinity
 
@@ -257,7 +259,7 @@ defmodule Socket.SSL do
   start an SSL connection on the given client socket with the given options,
   raising if an error occurs.
   """
-  @spec accept!(Socket.t(), t | Keyword.t()) :: t | no_return
+  @spec accept!(CozySocket.t(), t | Keyword.t()) :: t | no_return
   defbang(accept(socket, options))
 
   @doc """
@@ -305,14 +307,14 @@ defmodule Socket.SSL do
         raise RuntimeError, message: "the current process isn't the owner"
 
       code ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
   @doc """
   Set options of the socket.
   """
-  @spec options(t | :ssl.sslsocket(), Keyword.t()) :: :ok | {:error, Socket.Error.t()}
+  @spec options(t | :ssl.sslsocket(), Keyword.t()) :: :ok | {:error, CozySocket.Error.t()}
   def options(socket, options) when socket |> Record.is_record(:sslsocket) do
     :ssl.setopts(socket, arguments(options))
   end
@@ -320,7 +322,7 @@ defmodule Socket.SSL do
   @doc """
   Set options of the socket, raising if an error occurs.
   """
-  @spec options!(t | Socket.SSL.t() | port, Keyword.t()) :: :ok | no_return
+  @spec options!(t | CozySocket.SSL.t() | port, Keyword.t()) :: :ok | no_return
   defbang(options(socket, options))
 
   @doc """
@@ -356,7 +358,7 @@ defmodule Socket.SSL do
       Map.get(options, false, [])
     }
 
-    Socket.TCP.arguments(global) ++
+    CozySocket.TCP.arguments(global) ++
       Enum.flat_map(local, fn
         {:server_name, false} ->
           [{:server_name_indication, :disable}]

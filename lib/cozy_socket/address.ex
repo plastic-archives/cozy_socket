@@ -1,4 +1,4 @@
-defmodule Socket.Address do
+defmodule CozySocket.Address do
   require Bitwise
 
   @type t :: String.t() | charlist | :inet.ip_address()
@@ -67,7 +67,7 @@ defmodule Socket.Address do
         addresses
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 

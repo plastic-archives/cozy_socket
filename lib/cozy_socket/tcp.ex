@@ -1,4 +1,4 @@
-defmodule Socket.TCP do
+defmodule CozySocket.TCP do
   @moduledoc """
   This module wraps a passive TCP socket using `gen_tcp`.
 
@@ -26,15 +26,15 @@ defmodule Socket.TCP do
 
   ## Examples
 
-      server = Socket.TCP.listen!(1337, packet: :line)
+      server = CozySocket.TCP.listen!(1337, packet: :line)
 
-      client = server |> Socket.accept!
-      client |> Socket.Stream.send!(client |> Socket.Stream.recv!)
-      client |> Socket.Stream.close
+      client = server |> CozySocket.accept!
+      client |> CozySocket.Stream.send!(client |> CozySocket.Stream.recv!)
+      client |> CozySocket.Stream.close
 
   """
 
-  use Socket.Helpers
+  use CozySocket.Helpers
   require Record
 
   @opaque t :: port
@@ -57,8 +57,8 @@ defmodule Socket.TCP do
   @doc """
   Create a TCP socket connecting to the given host and port tuple.
   """
-  @spec connect({Socket.Address.t(), :inet.port_number()}) ::
-          {:ok, t} | {:error, Socket.Error.t()}
+  @spec connect({CozySocket.Address.t(), :inet.port_number()}) ::
+          {:ok, t} | {:error, CozySocket.Error.t()}
   def connect({address, port}) do
     connect(address, port)
   end
@@ -67,7 +67,7 @@ defmodule Socket.TCP do
   Create a TCP socket connecting to the given host and port tuple, raising if
   an error occurs.
   """
-  @spec connect!({Socket.Address.t(), :inet.port_number()}) :: t | no_return
+  @spec connect!({CozySocket.Address.t(), :inet.port_number()}) :: t | no_return
   defbang(connect(descriptor))
 
   @doc """
@@ -75,9 +75,9 @@ defmodule Socket.TCP do
   or to the given host and port.
   """
   @spec connect(
-          {Socket.Address.t(), :inet.port_number()} | Socket.Address.t(),
+          {CozySocket.Address.t(), :inet.port_number()} | CozySocket.Address.t(),
           Keyword.t() | :inet.port_number()
-        ) :: {:ok, t} | {:error, Socket.Error.t()}
+        ) :: {:ok, t} | {:error, CozySocket.Error.t()}
   def connect({address, port}, options) when options |> is_list do
     connect(address, port, options)
   end
@@ -91,7 +91,7 @@ defmodule Socket.TCP do
   or to the given host and port, raising if an error occurs.
   """
   @spec connect!(
-          {Socket.Address.t(), :inet.port_number()} | Socket.Address.t(),
+          {CozySocket.Address.t(), :inet.port_number()} | CozySocket.Address.t(),
           Keyword.t() | :inet.port_number()
         ) :: t | no_return
   defbang(connect(address, port))
@@ -100,7 +100,7 @@ defmodule Socket.TCP do
   Create a TCP socket connecting to the given host and port.
   """
   @spec connect(String.t() | :inet.ip_address(), :inet.port_number(), Keyword.t()) ::
-          {:ok, t} | {:error, Socket.Error.t()}
+          {:ok, t} | {:error, CozySocket.Error.t()}
   def connect(address, port, options) when address |> is_binary do
     timeout = options[:timeout] || :infinity
     options = Keyword.delete(options, :timeout)
@@ -120,7 +120,7 @@ defmodule Socket.TCP do
   Create a TCP socket listening on an OS chosen port, use `local` to know the
   port it was bound on.
   """
-  @spec listen :: {:ok, t} | {:error, Socket.Error.t()}
+  @spec listen :: {:ok, t} | {:error, CozySocket.Error.t()}
   def listen do
     listen(0, [])
   end
@@ -136,7 +136,7 @@ defmodule Socket.TCP do
   Create a TCP socket listening on an OS chosen port using the given options or
   listening on the given port.
   """
-  @spec listen(:inet.port_number() | Keyword.t()) :: {:ok, t} | {:error, Socket.Error.t()}
+  @spec listen(:inet.port_number() | Keyword.t()) :: {:ok, t} | {:error, CozySocket.Error.t()}
   def listen(port) when port |> is_integer do
     listen(port, [])
   end
@@ -155,7 +155,7 @@ defmodule Socket.TCP do
   @doc """
   Create a TCP socket listening on the given port and using the given options.
   """
-  @spec listen(:inet.port_number(), Keyword.t()) :: {:ok, t} | {:error, Socket.Error.t()}
+  @spec listen(:inet.port_number(), Keyword.t()) :: {:ok, t} | {:error, CozySocket.Error.t()}
   def listen(port, options) when options |> is_list do
     options =
       options
@@ -237,16 +237,16 @@ defmodule Socket.TCP do
         raise RuntimeError, message: "the current process isn't the owner"
 
       code ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
   @doc """
   Set options of the socket.
   """
-  @spec options(t | Socket.SSL.t() | port, Keyword.t()) :: :ok | {:error, Socket.Error.t()}
+  @spec options(t | CozySocket.SSL.t() | port, Keyword.t()) :: :ok | {:error, CozySocket.Error.t()}
   def options(socket, options) when socket |> Record.is_record(:sslsocket) do
-    Socket.SSL.options(socket, options)
+    CozySocket.SSL.options(socket, options)
   end
 
   def options(socket, options) when socket |> is_port do
@@ -256,7 +256,7 @@ defmodule Socket.TCP do
   @doc """
   Set options of the socket, raising if an error occurs.
   """
-  @spec options!(t | Socket.SSL.t() | port, Keyword.t()) :: :ok | no_return
+  @spec options!(t | CozySocket.SSL.t() | port, Keyword.t()) :: :ok | no_return
   defbang(options(socket, options))
 
   @doc """
@@ -286,7 +286,7 @@ defmodule Socket.TCP do
       Map.get(options, false, [])
     }
 
-    Socket.arguments(global) ++
+    CozySocket.arguments(global) ++
       Enum.flat_map(local, fn
         {:as, :binary} ->
           [:binary]
@@ -315,7 +315,7 @@ defmodule Socket.TCP do
         {:local, options} ->
           Enum.flat_map(options, fn
             {:address, address} ->
-              [{:ip, Socket.Address.parse(address)}]
+              [{:ip, CozySocket.Address.parse(address)}]
 
             {:port, port} ->
               [{:port, port}]

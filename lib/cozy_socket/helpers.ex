@@ -1,7 +1,7 @@
-defmodule Socket.Helpers do
+defmodule CozySocket.Helpers do
   defmacro __using__(_opts) do
     quote do
-      import Socket.Helpers
+      import CozySocket.Helpers
     end
   end
 
@@ -18,7 +18,7 @@ defmodule Socket.Helpers do
             result
 
           {:error, reason} ->
-            raise Socket.Error, reason: reason
+            raise CozySocket.Error, reason: reason
         end
       end
     end
@@ -41,7 +41,7 @@ defmodule Socket.Helpers do
             result
 
           {:error, reason} ->
-            raise Socket.Error, reason: reason
+            raise CozySocket.Error, reason: reason
         end
       end
     end

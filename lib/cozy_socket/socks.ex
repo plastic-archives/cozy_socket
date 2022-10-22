@@ -1,5 +1,5 @@
-defmodule Socket.SOCKS do
-  use Socket.Helpers
+defmodule CozySocket.SOCKS do
+  use CozySocket.Helpers
 
   def connect(to, through, options \\ []) do
     [address, port | auth] = through |> Tuple.to_list()
@@ -26,7 +26,7 @@ defmodule Socket.SOCKS do
         options
       end
 
-    Socket.TCP.connect(address, port, options)
+    CozySocket.TCP.connect(address, port, options)
   end
 
   defp handshake(socket, 4, auth, {address, port}) do
@@ -37,10 +37,10 @@ defmodule Socket.SOCKS do
         ""
       end
 
-    case Socket.Address.parse(address) do
+    case CozySocket.Address.parse(address) do
       {a, b, c, d} ->
         case socket
-             |> Socket.Stream.send(<<
+             |> CozySocket.Stream.send(<<
                # version
                0x04::8,
 
@@ -69,7 +69,7 @@ defmodule Socket.SOCKS do
 
       nil ->
         case socket
-             |> Socket.Stream.send(<<
+             |> CozySocket.Stream.send(<<
                # version
                0x04::8,
 
@@ -107,7 +107,7 @@ defmodule Socket.SOCKS do
   end
 
   defp response(socket, 4) do
-    case socket |> Socket.Stream.recv(8) do
+    case socket |> CozySocket.Stream.recv(8) do
       # request granted
       {:ok, <<0x00::8, 0x5A::8, _::16, _::32>>} ->
         :ok
@@ -138,10 +138,10 @@ defmodule Socket.SOCKS do
   defp post(socket, options) do
     cond do
       options[:mode] == :active ->
-        socket |> Socket.active()
+        socket |> CozySocket.active()
 
       options[:mode] == :once ->
-        socket |> Socket.active(:once)
+        socket |> CozySocket.active(:once)
 
       true ->
         :ok

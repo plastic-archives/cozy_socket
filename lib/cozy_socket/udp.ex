@@ -1,4 +1,4 @@
-defmodule Socket.UDP do
+defmodule CozySocket.UDP do
   @moduledoc """
   This module wraps a UDP socket using `gen_udp`.
 
@@ -17,16 +17,16 @@ defmodule Socket.UDP do
 
   ## Examples
 
-      server = Socket.UDP.open!(1337)
+      server = CozySocket.UDP.open!(1337)
 
-      { data, client } = server |> Socket.Datagram.recv!
-      server |> Socket.Datagram.send! data, client
+      { data, client } = server |> CozySocket.Datagram.recv!
+      server |> CozySocket.Datagram.send! data, client
 
   """
 
   @type t :: port
 
-  use Socket.Helpers
+  use CozySocket.Helpers
 
   @doc """
   Create a UDP socket listening on an OS chosen port, use `local` to know the
@@ -104,7 +104,7 @@ defmodule Socket.UDP do
         raise RuntimeError, message: "the current process isn't the owner"
 
       code ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
@@ -141,7 +141,7 @@ defmodule Socket.UDP do
       Map.get(options, false, [])
     }
 
-    Socket.arguments(global) ++
+    CozySocket.arguments(global) ++
       Enum.flat_map(local, fn
         {:as, :binary} ->
           [:binary]
@@ -152,7 +152,7 @@ defmodule Socket.UDP do
         {:local, options} ->
           Enum.flat_map(options, fn
             {:address, address} ->
-              [{:ip, Socket.Address.parse(address)}]
+              [{:ip, CozySocket.Address.parse(address)}]
 
             {:fd, fd} ->
               [{:fd, fd}]
@@ -170,7 +170,7 @@ defmodule Socket.UDP do
         {:multicast, options} ->
           Enum.flat_map(options, fn
             {:address, address} ->
-              [{:multicast_if, Socket.Address.parse(address)}]
+              [{:multicast_if, CozySocket.Address.parse(address)}]
 
             {:loop, loop} ->
               [{:multicast_loop, loop}]

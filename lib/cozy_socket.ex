@@ -1,5 +1,5 @@
-defmodule Socket do
-  @type t :: Socket.Protocol.t()
+defmodule CozySocket do
+  @type t :: CozySocket.Protocol.t()
 
   @default_port_ws 80
   @default_port_wss 443
@@ -10,10 +10,10 @@ defmodule Socket do
     def exception(reason: reason) do
       message =
         cond do
-          msg = Socket.TCP.error(reason) ->
+          msg = CozySocket.TCP.error(reason) ->
             msg
 
-          msg = Socket.SSL.error(reason) ->
+          msg = CozySocket.SSL.error(reason) ->
             msg
 
           true ->
@@ -29,63 +29,63 @@ defmodule Socket do
 
   ## Supported URIs
 
-  * `tcp://host:port` for Socket.TCP
-  * `ssl://host:port` for Socket.SSL
-  * `ws://host:port/path` for Socket.Web (using Socket.TCP)
-  * `wss://host:port/path` for Socket.Web (using Socket.SSL)
-  * `udp://host:port` for Socket:UDP
+  * `tcp://host:port` for CozySocket.TCP
+  * `ssl://host:port` for CozySocket.SSL
+  * `ws://host:port/path` for CozySocket.Web (using CozySocket.TCP)
+  * `wss://host:port/path` for CozySocket.Web (using CozySocket.SSL)
+  * `udp://host:port` for CozySocket:UDP
 
   ## Example
 
-      { :ok, client } = Socket.connect "tcp://google.com:80"
+      { :ok, client } = CozySocket.connect "tcp://google.com:80"
       client.send "GET / HTTP/1.1\r\n"
       client.recv
 
   """
-  @spec connect(String.t() | URI.t()) :: {:ok, Socket.t()} | {:error, any}
+  @spec connect(String.t() | URI.t()) :: {:ok, CozySocket.t()} | {:error, any}
   def connect(uri) when uri |> is_list or uri |> is_binary do
     connect(URI.parse(uri))
   end
 
   def connect(%URI{scheme: "tcp", host: host, port: port}) do
-    Socket.TCP.connect(host, port)
+    CozySocket.TCP.connect(host, port)
   end
 
   def connect(%URI{scheme: "ssl", host: host, port: port}) do
-    Socket.SSL.connect(host, port)
+    CozySocket.SSL.connect(host, port)
   end
 
   def connect(%URI{scheme: "ws", host: host, port: port, path: path}) do
-    Socket.Web.connect(host, port || @default_port_ws, path: path)
+    CozySocket.Web.connect(host, port || @default_port_ws, path: path)
   end
 
   def connect(%URI{scheme: "wss", host: host, port: port, path: path}) do
-    Socket.Web.connect(host, port || @default_port_wss, path: path, secure: true)
+    CozySocket.Web.connect(host, port || @default_port_wss, path: path, secure: true)
   end
 
   @doc """
   Create a socket connecting to somewhere using an URI, raising if an error
   occurs, see `connect`.
   """
-  @spec connect!(String.t() | URI.t()) :: Socket.t() | no_return
+  @spec connect!(String.t() | URI.t()) :: CozySocket.t() | no_return
   def connect!(uri) when uri |> is_list or uri |> is_binary do
     connect!(URI.parse(uri))
   end
 
   def connect!(%URI{scheme: "tcp", host: host, port: port}) do
-    Socket.TCP.connect!(host, port)
+    CozySocket.TCP.connect!(host, port)
   end
 
   def connect!(%URI{scheme: "ssl", host: host, port: port}) do
-    Socket.SSL.connect!(host, port)
+    CozySocket.SSL.connect!(host, port)
   end
 
   def connect!(%URI{scheme: "ws", host: host, port: port, path: path}) do
-    Socket.Web.connect!(host, port || @default_port_ws, path: path)
+    CozySocket.Web.connect!(host, port || @default_port_ws, path: path)
   end
 
   def connect!(%URI{scheme: "wss", host: host, port: port, path: path}) do
-    Socket.Web.connect!(host, port || @default_port_wss, path: path, secure: true)
+    CozySocket.Web.connect!(host, port || @default_port_wss, path: path, secure: true)
   end
 
   @doc """
@@ -95,41 +95,41 @@ defmodule Socket do
 
   If host is `*` it will be converted to `0.0.0.0`.
 
-  * `tcp://host:port` for Socket.TCP
-  * `ssl://host:port` for Socket.SSL
-  * `ws://host:port/path` for Socket.Web (using Socket.TCP)
-  * `wss://host:port/path` for Socket.Web (using Socket.SSL)
-  * `udp://host:port` for Socket:UDP
+  * `tcp://host:port` for CozySocket.TCP
+  * `ssl://host:port` for CozySocket.SSL
+  * `ws://host:port/path` for CozySocket.Web (using CozySocket.TCP)
+  * `wss://host:port/path` for CozySocket.Web (using CozySocket.SSL)
+  * `udp://host:port` for CozySocket:UDP
 
   ## Example
 
-      { :ok, server } = Socket.listen "tcp://*:1337"
-      client = server |> Socket.accept!(packet: :line)
-      client |> Socket.Stream.send(client.recv)
-      client |> Socket.Stream.close
+      { :ok, server } = CozySocket.listen "tcp://*:1337"
+      client = server |> CozySocket.accept!(packet: :line)
+      client |> CozySocket.Stream.send(client.recv)
+      client |> CozySocket.Stream.close
 
   """
-  @spec listen(String.t() | URI.t()) :: {:ok, Socket.t()} | {:error, any}
+  @spec listen(String.t() | URI.t()) :: {:ok, CozySocket.t()} | {:error, any}
   def listen(uri) when uri |> is_list or uri |> is_binary do
     listen(URI.parse(uri))
   end
 
   def listen(%URI{scheme: "tcp", host: host, port: port}) do
-    Socket.TCP.listen(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
+    CozySocket.TCP.listen(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
   end
 
   def listen(%URI{scheme: "ssl", host: host, port: port}) do
-    Socket.SSL.listen(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
+    CozySocket.SSL.listen(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
   end
 
   def listen(%URI{scheme: "ws", host: host, port: port}) do
-    Socket.Web.listen(port || @default_port_ws,
+    CozySocket.Web.listen(port || @default_port_ws,
       local: [address: if(host == "*", do: "0.0.0.0", else: host)]
     )
   end
 
   def listen(%URI{scheme: "wss", host: host, port: port}) do
-    Socket.Web.listen(port || @default_port_wss,
+    CozySocket.Web.listen(port || @default_port_wss,
       secure: true,
       local: [address: if(host == "*", do: "0.0.0.0", else: host)]
     )
@@ -139,27 +139,27 @@ defmodule Socket do
   Create a socket listening somewhere using an URI, raising if an error occurs,
   see `listen`.
   """
-  @spec listen!(String.t() | URI.t()) :: Socket.t() | no_return
+  @spec listen!(String.t() | URI.t()) :: CozySocket.t() | no_return
   def listen!(uri) when uri |> is_list or uri |> is_binary do
     listen!(URI.parse(uri))
   end
 
   def listen!(%URI{scheme: "tcp", host: host, port: port}) do
-    Socket.TCP.listen!(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
+    CozySocket.TCP.listen!(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
   end
 
   def listen!(%URI{scheme: "ssl", host: host, port: port}) do
-    Socket.SSL.listen!(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
+    CozySocket.SSL.listen!(port, local: [address: if(host == "*", do: "0.0.0.0", else: host)])
   end
 
   def listen!(%URI{scheme: "ws", host: host, port: port}) do
-    Socket.Web.listen!(port || @default_port_ws,
+    CozySocket.Web.listen!(port || @default_port_ws,
       local: [address: if(host == "*", do: "0.0.0.0", else: host)]
     )
   end
 
   def listen!(%URI{scheme: "wss", host: host, port: port}) do
-    Socket.Web.listen!(port || @default_port_wss,
+    CozySocket.Web.listen!(port || @default_port_wss,
       secure: true,
       local: [address: if(host == "*", do: "0.0.0.0", else: host)]
     )
@@ -225,45 +225,45 @@ defmodule Socket do
     end)
   end
 
-  use Socket.Helpers
+  use CozySocket.Helpers
 
-  defdelegate equal?(self, other), to: Socket.Protocol
+  defdelegate equal?(self, other), to: CozySocket.Protocol
 
-  defdelegate accept(self), to: Socket.Protocol
-  defbang(accept(self), to: Socket.Protocol)
+  defdelegate accept(self), to: CozySocket.Protocol
+  defbang(accept(self), to: CozySocket.Protocol)
 
-  defdelegate accept(self, options), to: Socket.Protocol
-  defbang(accept(self, options), to: Socket.Protocol)
+  defdelegate accept(self, options), to: CozySocket.Protocol
+  defbang(accept(self, options), to: CozySocket.Protocol)
 
-  defdelegate options(self, opts), to: Socket.Protocol
-  defbang(options(self, opts), to: Socket.Protocol)
+  defdelegate options(self, opts), to: CozySocket.Protocol
+  defbang(options(self, opts), to: CozySocket.Protocol)
 
-  defdelegate packet(self, type), to: Socket.Protocol
-  defbang(packet(self, type), to: Socket.Protocol)
+  defdelegate packet(self, type), to: CozySocket.Protocol
+  defbang(packet(self, type), to: CozySocket.Protocol)
 
-  defdelegate process(self, pid), to: Socket.Protocol
-  defbang(process(self, pid), to: Socket.Protocol)
+  defdelegate process(self, pid), to: CozySocket.Protocol
+  defbang(process(self, pid), to: CozySocket.Protocol)
 
-  defdelegate active(self), to: Socket.Protocol
-  defbang(active(self), to: Socket.Protocol)
+  defdelegate active(self), to: CozySocket.Protocol
+  defbang(active(self), to: CozySocket.Protocol)
 
-  defdelegate active(self, mode), to: Socket.Protocol
-  defbang(active(self, mode), to: Socket.Protocol)
+  defdelegate active(self, mode), to: CozySocket.Protocol
+  defbang(active(self, mode), to: CozySocket.Protocol)
 
-  defdelegate passive(self), to: Socket.Protocol
-  defbang(passive(self), to: Socket.Protocol)
+  defdelegate passive(self), to: CozySocket.Protocol
+  defbang(passive(self), to: CozySocket.Protocol)
 
-  defdelegate local(self), to: Socket.Protocol
-  defbang(local(self), to: Socket.Protocol)
+  defdelegate local(self), to: CozySocket.Protocol
+  defbang(local(self), to: CozySocket.Protocol)
 
-  defdelegate remote(self), to: Socket.Protocol
-  defbang(remote(self), to: Socket.Protocol)
+  defdelegate remote(self), to: CozySocket.Protocol
+  defbang(remote(self), to: CozySocket.Protocol)
 
-  defdelegate close(self), to: Socket.Protocol
-  defbang(close(self), to: Socket.Protocol)
+  defdelegate close(self), to: CozySocket.Protocol
+  defbang(close(self), to: CozySocket.Protocol)
 end
 
-defprotocol Socket.Protocol do
+defprotocol CozySocket.Protocol do
   @doc """
   Check the two sockets are the same.
   """
@@ -316,13 +316,13 @@ defprotocol Socket.Protocol do
   @doc """
   Get the local address/port of the socket.
   """
-  @spec local(t) :: {:ok, {Socket.Address.t(), :inet.port_number()}} | {:error, term}
+  @spec local(t) :: {:ok, {CozySocket.Address.t(), :inet.port_number()}} | {:error, term}
   def local(self)
 
   @doc """
   Get the remote address/port of the socket.
   """
-  @spec remote(t) :: {:ok, {Socket.Address.t(), :inet.port_number()}} | {:error, term}
+  @spec remote(t) :: {:ok, {CozySocket.Address.t(), :inet.port_number()}} | {:error, term}
   def remote(self)
 
   @doc """
@@ -332,7 +332,7 @@ defprotocol Socket.Protocol do
   def close(self)
 end
 
-defimpl Socket.Protocol, for: Port do
+defimpl CozySocket.Protocol, for: Port do
   def equal?(self, other) when other |> is_port do
     self == other
   end
@@ -344,7 +344,7 @@ defimpl Socket.Protocol, for: Port do
   def accept(self, options \\ []) do
     case :inet_db.lookup_socket(self) do
       {:ok, mod} when mod in [:inet_tcp, :inet6_tcp] ->
-        Socket.TCP.accept(self, options)
+        CozySocket.TCP.accept(self, options)
 
       {:ok, mod} when mod in [:inet_udp, :inet6_udp] ->
         {:error, :einval}
@@ -352,7 +352,7 @@ defimpl Socket.Protocol, for: Port do
   end
 
   def options(self, opts) do
-    :inet.setopts(self, Socket.arguments(opts))
+    :inet.setopts(self, CozySocket.arguments(opts))
   end
 
   def packet(self, type) do
@@ -394,7 +394,7 @@ defimpl Socket.Protocol, for: Port do
   end
 end
 
-defimpl Socket.Protocol, for: Tuple do
+defimpl CozySocket.Protocol, for: Tuple do
   require Record
 
   def equal?(self, other)
@@ -411,11 +411,11 @@ defimpl Socket.Protocol, for: Tuple do
   end
 
   def accept(self, options \\ []) when self |> Record.is_record(:sslsocket) do
-    Socket.SSL.accept(self, options)
+    CozySocket.SSL.accept(self, options)
   end
 
   def options(self, opts) when self |> Record.is_record(:sslsocket) do
-    Socket.SSL.options(self, opts)
+    CozySocket.SSL.options(self, opts)
   end
 
   def packet(self, type) when self |> Record.is_record(:sslsocket) do

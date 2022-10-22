@@ -1,7 +1,7 @@
-defmodule Socket.Host do
+defmodule CozySocket.Host do
   defstruct [:name, :aliases, :type, :length, :list]
 
-  @type t :: %Socket.Host{
+  @type t :: %CozySocket.Host{
           name: String.t(),
           aliases: [String.t()],
           type: :inet | :inet6,
@@ -10,7 +10,7 @@ defmodule Socket.Host do
         }
 
   defp convert({_, name, aliases, type, length, list}) do
-    %Socket.Host{
+    %CozySocket.Host{
       name: List.to_string(name),
       aliases: aliases |> Enum.map(&List.to_string/1),
       type: type,
@@ -22,9 +22,9 @@ defmodule Socket.Host do
   @doc """
   Get the hostent by address.
   """
-  @spec by_address(Socket.Address.t()) :: {:ok, t} | {:error, :inet.posix()}
+  @spec by_address(CozySocket.Address.t()) :: {:ok, t} | {:error, :inet.posix()}
   def by_address(address) do
-    case :inet.gethostbyaddr(Socket.Address.parse(address)) do
+    case :inet.gethostbyaddr(CozySocket.Address.parse(address)) do
       {:ok, host} ->
         {:ok, convert(host)}
 
@@ -36,14 +36,14 @@ defmodule Socket.Host do
   @doc """
   Get the hostent by address, raising if an error occurs.
   """
-  @spec by_address!(Socket.Address.t()) :: t | no_return
+  @spec by_address!(CozySocket.Address.t()) :: t | no_return
   def by_address!(address) do
-    case :inet.gethostbyaddr(Socket.Address.parse(address)) do
+    case :inet.gethostbyaddr(CozySocket.Address.parse(address)) do
       {:ok, host} ->
         convert(host)
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
@@ -85,7 +85,7 @@ defmodule Socket.Host do
         convert(host)
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
@@ -99,7 +99,7 @@ defmodule Socket.Host do
         convert(host)
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
@@ -132,7 +132,7 @@ defmodule Socket.Host do
         ifs
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 end

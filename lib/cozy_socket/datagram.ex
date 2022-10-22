@@ -1,4 +1,4 @@
-defprotocol Socket.Datagram.Protocol do
+defprotocol CozySocket.Datagram.Protocol do
   @doc """
   Send a packet to the given recipient.
   """
@@ -8,41 +8,41 @@ defprotocol Socket.Datagram.Protocol do
   @doc """
   Receive a packet from the socket.
   """
-  @spec recv(t) :: {:ok, {iodata, {Socket.Address.t(), :inet.port_number()}}} | {:error, term}
+  @spec recv(t) :: {:ok, {iodata, {CozySocket.Address.t(), :inet.port_number()}}} | {:error, term}
   def recv(self)
 
   @doc """
   Receive a packet with the given options or with the given size.
   """
   @spec recv(t, non_neg_integer | Keyword.t()) ::
-          {:ok, {iodata, {Socket.Address.t(), :inet.port_number()}}} | {:error, term}
+          {:ok, {iodata, {CozySocket.Address.t(), :inet.port_number()}}} | {:error, term}
   def recv(self, length_or_options)
 
   @doc """
   Receive a packet with the given size and options.
   """
   @spec recv(t, non_neg_integer, Keyword.t()) ::
-          {:ok, {iodata, {Socket.Address.t(), :inet.port_number()}}} | {:error, term}
+          {:ok, {iodata, {CozySocket.Address.t(), :inet.port_number()}}} | {:error, term}
   def recv(self, length, options)
 end
 
-defmodule Socket.Datagram do
-  @type t :: Socket.Datagram.Protocol.t()
+defmodule CozySocket.Datagram do
+  @type t :: CozySocket.Datagram.Protocol.t()
 
-  use Socket.Helpers
+  use CozySocket.Helpers
 
-  defdelegate send(self, packet, to), to: Socket.Datagram.Protocol
-  defbang(send(self, packet, to), to: Socket.Datagram.Protocol)
+  defdelegate send(self, packet, to), to: CozySocket.Datagram.Protocol
+  defbang(send(self, packet, to), to: CozySocket.Datagram.Protocol)
 
-  defdelegate recv(self), to: Socket.Datagram.Protocol
-  defbang(recv(self), to: Socket.Datagram.Protocol)
-  defdelegate recv(self, length_or_options), to: Socket.Datagram.Protocol
-  defbang(recv(self, length_or_options), to: Socket.Datagram.Protocol)
-  defdelegate recv(self, length, options), to: Socket.Datagram.Protocol
-  defbang(recv(self, length, options), to: Socket.Datagram.Protocol)
+  defdelegate recv(self), to: CozySocket.Datagram.Protocol
+  defbang(recv(self), to: CozySocket.Datagram.Protocol)
+  defdelegate recv(self, length_or_options), to: CozySocket.Datagram.Protocol
+  defbang(recv(self, length_or_options), to: CozySocket.Datagram.Protocol)
+  defdelegate recv(self, length, options), to: CozySocket.Datagram.Protocol
+  defbang(recv(self, length, options), to: CozySocket.Datagram.Protocol)
 end
 
-defimpl Socket.Datagram.Protocol, for: Port do
+defimpl CozySocket.Datagram.Protocol, for: Port do
   def send(self, data, {address, port}) do
     address =
       if address |> is_binary do

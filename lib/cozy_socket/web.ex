@@ -1,25 +1,25 @@
-defmodule Socket.Web do
+defmodule CozySocket.Web do
   @moduledoc ~S"""
-  This module implements RFC 6455 WebSockets.
+  This module implements RFC 6455 WebCozySockets.
 
   ## Client example
 
-      socket = Socket.Web.connect! "echo.websocket.org"
-      socket |> Socket.Web.send! { :text, "test" }
-      socket |> Socket.Web.recv! # => {:text, "test"}
+      socket = CozySocket.Web.connect! "echo.websocket.org"
+      socket |> CozySocket.Web.send! { :text, "test" }
+      socket |> CozySocket.Web.recv! # => {:text, "test"}
 
   ## Server example
 
-      server = Socket.Web.listen! 80
-      client = server |> Socket.Web.accept!
+      server = CozySocket.Web.listen! 80
+      client = server |> CozySocket.Web.accept!
 
       # here you can verify if you want to accept the request or not, call
-      # `Socket.Web.close!` if you don't want to accept it, or else call
-      # `Socket.Web.accept!`
-      client |> Socket.Web.accept!
+      # `CozySocket.Web.close!` if you don't want to accept it, or else call
+      # `CozySocket.Web.accept!`
+      client |> CozySocket.Web.accept!
 
       # echo the first message
-      client |> Socket.Web.send!(client |> Socket.Web.recv!)
+      client |> CozySocket.Web.send!(client |> CozySocket.Web.recv!)
 
   """
 
@@ -27,7 +27,7 @@ defmodule Socket.Web do
   import Kernel, except: [length: 1, send: 2]
   alias __MODULE__, as: W
 
-  @type error :: Socket.TCP.error() | Socket.SSL.error()
+  @type error :: CozySocket.TCP.error() | CozySocket.SSL.error()
 
   @type packet ::
           {:text, String.t()}
@@ -97,7 +97,7 @@ defmodule Socket.Web do
     {:headers, %{}}
   ]
 
-  @type t :: %Socket.Web{
+  @type t :: %CozySocket.Web{
           socket: term,
           version: 13,
           path: String.t(),
@@ -108,11 +108,11 @@ defmodule Socket.Web do
           mask: boolean
         }
 
-  @spec headers(%{String.t() => String.t()}, Socket.t(), Keyword.t()) :: %{
+  @spec headers(%{String.t() => String.t()}, CozySocket.t(), Keyword.t()) :: %{
           String.t() => String.t()
         }
   defp headers(acc, socket, options) do
-    case socket |> Socket.Stream.recv!(options) do
+    case socket |> CozySocket.Stream.recv!(options) do
       {:http_header, _, name, _, value} when name |> is_atom ->
         acc
         |> Map.put(Atom.to_string(name) |> String.downcase(), value)
@@ -134,7 +134,7 @@ defmodule Socket.Web do
   @doc """
   Connects to the given address or { address, port } tuple.
   """
-  @spec connect({Socket.Address.t(), :inet.port_number()}) :: {:ok, t} | {:error, error}
+  @spec connect({CozySocket.Address.t(), :inet.port_number()}) :: {:ok, t} | {:error, error}
   def connect({address, port}) do
     connect(address, port, [])
   end
@@ -148,7 +148,7 @@ defmodule Socket.Web do
   options or address and port.
   """
   @spec connect(
-          {Socket.Address.t(), :inet.port_number()} | Socket.Address.t(),
+          {CozySocket.Address.t(), :inet.port_number()} | CozySocket.Address.t(),
           Keyword.t() | :inet.port_number()
         ) :: {:ok, t} | {:error, error}
   def connect({address, port}, options) do
@@ -175,7 +175,7 @@ defmodule Socket.Web do
   You can also pass TCP or SSL options, depending if you're using secure
   websockets or not.
   """
-  @spec connect(Socket.Address.t(), :inet.port_number(), Keyword.t()) ::
+  @spec connect(CozySocket.Address.t(), :inet.port_number(), Keyword.t()) ::
           {:ok, t} | {:error, error}
   def connect(address, port, options) do
     try do
@@ -190,10 +190,10 @@ defmodule Socket.Web do
       e in [RuntimeError] ->
         {:error, e.message}
 
-      e in [Socket.Error] ->
+      e in [CozySocket.Error] ->
         {:error, e.message}
 
-      e in [Socket.TCP.Error, Socket.SSL.Error] ->
+      e in [CozySocket.TCP.Error, CozySocket.SSL.Error] ->
         {:error, e.code}
     end
   end
@@ -202,7 +202,7 @@ defmodule Socket.Web do
   Connects to the given address or { address, port } tuple, raising if an error
   occurs.
   """
-  @spec connect!({Socket.Address.t(), :inet.port_number()}) :: t | no_return
+  @spec connect!({CozySocket.Address.t(), :inet.port_number()}) :: t | no_return
   def connect!({address, port}) do
     connect!(address, port, [])
   end
@@ -216,7 +216,7 @@ defmodule Socket.Web do
   options or address and port, raising if an error occurs.
   """
   @spec connect!(
-          {Socket.Address.t(), :inet.port_number()} | Socket.Address.t(),
+          {CozySocket.Address.t(), :inet.port_number()} | CozySocket.Address.t(),
           Keyword.t() | :inet.port_number()
         ) :: t | no_return
   def connect!({address, port}, options) do
@@ -244,15 +244,15 @@ defmodule Socket.Web do
   You can also pass TCP or SSL options, depending if you're using secure
   websockets or not.
   """
-  @spec connect!(Socket.Address.t(), :inet.port_number(), Keyword.t()) :: t | no_return
+  @spec connect!(CozySocket.Address.t(), :inet.port_number(), Keyword.t()) :: t | no_return
   def connect!(address, port, options) do
     {local, global} = arguments(options)
 
     mod =
       if local[:secure] do
-        Socket.SSL
+        CozySocket.SSL
       else
-        Socket.TCP
+        CozySocket.TCP
       end
 
     path = local[:path] || "/"
@@ -263,10 +263,10 @@ defmodule Socket.Web do
     headers = Enum.map(local[:headers] || %{}, fn {k, v} -> ["#{k}: #{v}", "\r\n"] end)
 
     client = mod.connect!(address, port, global)
-    client |> Socket.packet!(:raw)
+    client |> CozySocket.packet!(:raw)
 
     client
-    |> Socket.Stream.send!([
+    |> CozySocket.Stream.send!([
       "GET #{path} HTTP/1.1",
       "\r\n",
       headers,
@@ -277,45 +277,45 @@ defmodule Socket.Web do
       "\r\n",
       "Connection: Upgrade",
       "\r\n",
-      "Sec-WebSocket-Key: #{handshake}",
+      "Sec-WebCozySocket-Key: #{handshake}",
       "\r\n",
       if(protocols,
-        do: ["Sec-WebSocket-Protocol: #{Enum.join(protocols, ", ")}", "\r\n"],
+        do: ["Sec-WebCozySocket-Protocol: #{Enum.join(protocols, ", ")}", "\r\n"],
         else: []
       ),
       if(extensions,
-        do: ["Sec-WebSocket-Extensions: #{Enum.join(extensions, ", ")}", "\r\n"],
+        do: ["Sec-WebCozySocket-Extensions: #{Enum.join(extensions, ", ")}", "\r\n"],
         else: []
       ),
-      "Sec-WebSocket-Version: 13",
+      "Sec-WebCozySocket-Version: 13",
       "\r\n",
       "\r\n"
     ])
 
-    client |> Socket.packet(:http_bin)
-    {:http_response, _, 101, _} = client |> Socket.Stream.recv!(global)
+    client |> CozySocket.packet(:http_bin)
+    {:http_response, _, 101, _} = client |> CozySocket.Stream.recv!(global)
     headers = headers(%{}, client, local)
 
     if String.downcase(headers["upgrade"] || "") != "websocket" or
          String.downcase(headers["connection"] || "") != "upgrade" do
-      client |> Socket.close()
+      client |> CozySocket.close()
 
       raise RuntimeError, message: "malformed upgrade response"
     end
 
     if headers["sec-websocket-version"] && headers["sec-websocket-version"] != "13" do
-      client |> Socket.close()
+      client |> CozySocket.close()
 
       raise RuntimeError, message: "unsupported version"
     end
 
     if !headers["sec-websocket-accept"] or headers["sec-websocket-accept"] != key(handshake) do
-      client |> Socket.close()
+      client |> CozySocket.close()
 
       raise RuntimeError, message: "wrong key response"
     end
 
-    client |> Socket.packet!(:raw)
+    client |> CozySocket.packet!(:raw)
 
     %W{socket: client, version: 13, path: path, origin: origin, key: handshake, mask: true}
   end
@@ -360,9 +360,9 @@ defmodule Socket.Web do
 
     mod =
       if local[:secure] do
-        Socket.SSL
+        CozySocket.SSL
       else
-        Socket.TCP
+        CozySocket.TCP
       end
 
     case mod.listen(port, global) do
@@ -415,9 +415,9 @@ defmodule Socket.Web do
 
     mod =
       if local[:secure] do
-        Socket.SSL
+        CozySocket.SSL
       else
-        Socket.TCP
+        CozySocket.TCP
       end
 
     %W{socket: mod.listen!(port, global)}
@@ -442,7 +442,7 @@ defmodule Socket.Web do
       e in [RuntimeError] ->
         {:error, e.message}
 
-      e in [Socket.Error] ->
+      e in [CozySocket.Error] ->
         {:error, e.code}
     end
   end
@@ -463,11 +463,11 @@ defmodule Socket.Web do
   def accept!(%W{socket: socket, key: nil}, options) do
     {local, global} = arguments(options)
 
-    client = socket |> Socket.accept!(global)
-    client |> Socket.packet!(:http_bin)
+    client = socket |> CozySocket.accept!(global)
+    client |> CozySocket.packet!(:http_bin)
 
     path =
-      case client |> Socket.Stream.recv!(global) do
+      case client |> CozySocket.Stream.recv!(global) do
         {:http_request, :GET, {:abs_path, path}, _} ->
           path
       end
@@ -475,13 +475,13 @@ defmodule Socket.Web do
     headers = headers(%{}, client, local)
 
     if headers["upgrade"] != "websocket" and headers["connection"] != "Upgrade" do
-      client |> Socket.close()
+      client |> CozySocket.close()
 
       raise RuntimeError, message: "malformed upgrade request"
     end
 
     unless headers["sec-websocket-key"] do
-      client |> Socket.close()
+      client |> CozySocket.close()
 
       raise RuntimeError, message: "missing key"
     end
@@ -496,7 +496,7 @@ defmodule Socket.Web do
         String.split(e, ~r/\s*,\s*/)
       end
 
-    client |> Socket.packet!(:raw)
+    client |> CozySocket.packet!(:raw)
 
     %W{
       socket: client,
@@ -516,25 +516,25 @@ defmodule Socket.Web do
     extensions = local[:extensions]
     protocol = local[:protocol]
 
-    socket |> Socket.packet!(:raw)
+    socket |> CozySocket.packet!(:raw)
 
     socket
-    |> Socket.Stream.send!([
+    |> CozySocket.Stream.send!([
       "HTTP/1.1 101 Switching Protocols",
       "\r\n",
       "Upgrade: websocket",
       "\r\n",
       "Connection: Upgrade",
       "\r\n",
-      "Sec-WebSocket-Accept: #{key(key)}",
+      "Sec-WebCozySocket-Accept: #{key(key)}",
       "\r\n",
-      "Sec-WebSocket-Version: 13",
+      "Sec-WebCozySocket-Version: 13",
       "\r\n",
       if(extensions,
-        do: ["Sec-WebSocket-Extensions: ", Enum.join(extensions, ", "), "\r\n"],
+        do: ["Sec-WebCozySocket-Extensions: ", Enum.join(extensions, ", "), "\r\n"],
         else: []
       ),
-      if(protocol, do: ["Sec-WebSocket-Protocol: ", protocol, "\r\n"], else: []),
+      if(protocol, do: ["Sec-WebCozySocket-Protocol: ", protocol, "\r\n"], else: []),
       "\r\n"
     ])
 
@@ -566,7 +566,7 @@ defmodule Socket.Web do
   """
   @spec local(t) :: {:ok, {:inet.ip_address(), :inet.port_number()}} | {:error, error}
   def local(%W{socket: socket}) do
-    socket |> Socket.local()
+    socket |> CozySocket.local()
   end
 
   @doc """
@@ -574,7 +574,7 @@ defmodule Socket.Web do
   """
   @spec local!(t) :: {:inet.ip_address(), :inet.port_number()} | no_return
   def local!(%W{socket: socket}) do
-    socket |> Socket.local!()
+    socket |> CozySocket.local!()
   end
 
   @doc """
@@ -582,7 +582,7 @@ defmodule Socket.Web do
   """
   @spec remote(t) :: {:ok, {:inet.ip_address(), :inet.port_number()}} | {:error, error}
   def remote(%W{socket: socket}) do
-    socket |> Socket.remote()
+    socket |> CozySocket.remote()
   end
 
   @doc """
@@ -590,7 +590,7 @@ defmodule Socket.Web do
   """
   @spec remote!(t) :: {:inet.ip_address(), :inet.port_number()} | no_return
   def remote!(%W{socket: socket}) do
-    socket |> Socket.remote!()
+    socket |> CozySocket.remote!()
   end
 
   @spec mask(binary) :: {integer, binary}
@@ -645,7 +645,7 @@ defmodule Socket.Web do
     length =
       cond do
         length == 127 ->
-          case socket |> Socket.Stream.recv(8, options) do
+          case socket |> CozySocket.Stream.recv(8, options) do
             {:ok, <<length::64>>} ->
               length
 
@@ -654,7 +654,7 @@ defmodule Socket.Web do
           end
 
         length == 126 ->
-          case socket |> Socket.Stream.recv(2, options) do
+          case socket |> CozySocket.Stream.recv(2, options) do
             {:ok, <<length::16>>} ->
               length
 
@@ -672,10 +672,10 @@ defmodule Socket.Web do
 
       length ->
         if mask do
-          case socket |> Socket.Stream.recv(4, options) do
+          case socket |> CozySocket.Stream.recv(4, options) do
             {:ok, <<key::32>>} ->
               if length > 0 do
-                case socket |> Socket.Stream.recv(length, options) do
+                case socket |> CozySocket.Stream.recv(length, options) do
                   {:ok, data} ->
                     {:ok, unmask(key, data)}
 
@@ -691,7 +691,7 @@ defmodule Socket.Web do
           end
         else
           if length > 0 do
-            case socket |> Socket.Stream.recv(length, options) do
+            case socket |> CozySocket.Stream.recv(length, options) do
               {:ok, data} ->
                 {:ok, data}
 
@@ -724,7 +724,7 @@ defmodule Socket.Web do
   def recv(self, options \\ [])
 
   def recv(%W{socket: socket, version: 13} = self, options) do
-    case socket |> Socket.Stream.recv(2, options) do
+    case socket |> CozySocket.Stream.recv(2, options) do
       # a non fragmented message packet
       {:ok, <<1::1, 0::3, opcode::4, mask::1, length::7>>} when known?(opcode) and data?(opcode) ->
         case on_success({opcode(opcode), data}, options) do
@@ -799,7 +799,7 @@ defmodule Socket.Web do
         raise RuntimeError, message: "protocol error"
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
@@ -844,13 +844,13 @@ defmodule Socket.Web do
       when opcode != :close do
     mask = if Keyword.has_key?(options, :mask), do: options[:mask], else: mask
 
-    socket |> Socket.Stream.send(<<1::1, 0::3, opcode(opcode)::4, forge(mask, data)::binary>>)
+    socket |> CozySocket.Stream.send(<<1::1, 0::3, opcode(opcode)::4, forge(mask, data)::binary>>)
   end
 
   def send(%W{socket: socket, version: 13, mask: mask}, {:fragmented, :end, data}, options) do
     mask = if Keyword.has_key?(options, :mask), do: options[:mask], else: mask
 
-    socket |> Socket.Stream.send(<<1::1, 0::3, 0::4, forge(mask, data)::binary>>)
+    socket |> CozySocket.Stream.send(<<1::1, 0::3, 0::4, forge(mask, data)::binary>>)
   end
 
   def send(
@@ -860,13 +860,13 @@ defmodule Socket.Web do
       ) do
     mask = if Keyword.has_key?(options, :mask), do: options[:mask], else: mask
 
-    socket |> Socket.Stream.send(<<0::1, 0::3, 0::4, forge(mask, data)::binary>>)
+    socket |> CozySocket.Stream.send(<<0::1, 0::3, 0::4, forge(mask, data)::binary>>)
   end
 
   def send(%W{socket: socket, version: 13, mask: mask}, {:fragmented, opcode, data}, options) do
     mask = if Keyword.has_key?(options, :mask), do: options[:mask], else: mask
 
-    socket |> Socket.Stream.send(<<0::1, 0::3, opcode(opcode)::4, forge(mask, data)::binary>>)
+    socket |> CozySocket.Stream.send(<<0::1, 0::3, opcode(opcode)::4, forge(mask, data)::binary>>)
   end
 
   @doc """
@@ -880,7 +880,7 @@ defmodule Socket.Web do
         :ok
 
       {:error, code} ->
-        raise Socket.Error, reason: code
+        raise CozySocket.Error, reason: code
     end
   end
 
@@ -932,7 +932,7 @@ defmodule Socket.Web do
   """
   @spec close(t) :: :ok | {:error, error}
   def close(%W{socket: socket, version: 13}) do
-    socket |> Socket.Stream.send(<<1::1, 0::3, opcode(:close)::4, forge(nil, <<>>)::binary>>)
+    socket |> CozySocket.Stream.send(<<1::1, 0::3, opcode(:close)::4, forge(nil, <<>>)::binary>>)
   end
 
   @doc """
@@ -948,7 +948,7 @@ defmodule Socket.Web do
     mask = if Keyword.has_key?(options, :mask), do: options[:mask], else: mask
 
     socket
-    |> Socket.Stream.send(
+    |> CozySocket.Stream.send(
       <<1::1, 0::3, opcode(:close)::4,
         forge(
           mask,
@@ -988,6 +988,6 @@ defmodule Socket.Web do
   """
   @spec abort(t) :: :ok | {:error, error}
   def abort(%W{socket: socket}) do
-    Socket.Stream.close(socket)
+    CozySocket.Stream.close(socket)
   end
 end

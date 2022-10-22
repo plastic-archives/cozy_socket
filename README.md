@@ -1,26 +1,25 @@
-Elixir sockets made decent
-==========================
+# CozySocket
+
+> Socket handling library for Elixir.
+
 This library wraps `gen_tcp`, `gen_udp` and `gen_sctp`, `ssl` and implements
 websockets and socks.
 
-Installation
---------
-In your `mix.exs` file
+## Installation
+
+Add `:cozy_socket` to `mix.exs`:
 
 ```
 defp deps do
   [
-    # ...
-    {:socket, "~> 0.3"},
-    # ...
+    {:cozy_socket, "~> 0.3"},
   ]
 end
 ```
 
-Then run `mix deps.get` to install
+## Usage
 
-Examples
---------
+### HTTP
 
 ```elixir
 defmodule HTTP do
@@ -29,21 +28,21 @@ defmodule HTTP do
   end
 
   def get(%URI{host: host, port: port, path: path}) do
-    sock = Socket.TCP.connect! host, port, packet: :line
-    sock |> Socket.Stream.send! "GET #{path || "/"} HTTP/1.1\r\nHost: #{host}\r\n\r\n"
+    sock = CozySocket.TCP.connect! host, port, packet: :line
+    sock |> CozySocket.Stream.send! "GET #{path || "/"} HTTP/1.1\r\nHost: #{host}\r\n\r\n"
 
-    [_, code, text] = Regex.run ~r"HTTP/1.1 (.*?) (.*?)\s*$", sock |> Socket.Stream.recv!
+    [_, code, text] = Regex.run ~r"HTTP/1.1 (.*?) (.*?)\s*$", sock |> CozySocket.Stream.recv!
 
     headers = headers([], sock) |> Enum.into(%{})
 
-    sock |> Socket.packet! :raw
-    body = sock |> Socket.Stream.recv!(String.to_integer(headers["Content-Length"]))
+    sock |> CozySocket.packet! :raw
+    body = sock |> CozySocket.Stream.recv!(String.to_integer(headers["Content-Length"]))
 
     { { String.to_integer(code), text }, headers, body }
   end
 
   defp headers(acc, sock) do
-    case sock |> Socket.Stream.recv! do
+    case sock |> CozySocket.Stream.recv! do
       "\r\n" ->
         acc
 
@@ -56,52 +55,51 @@ defmodule HTTP do
 end
 ```
 
-Websockets
-----------
+### WebCozySocket
 
-### Client
+#### Client
 
 ```elixir
-socket = Socket.Web.connect! "echo.websocket.org"
-socket |> Socket.Web.send! { :text, "test" }
-socket |> Socket.Web.recv! # => {:text, "test"}
+socket = CozySocket.Web.connect! "echo.websocket.org"
+socket |> CozySocket.Web.send! { :text, "test" }
+socket |> CozySocket.Web.recv! # => {:text, "test"}
 ```
 
 In order to connect to a TLS websocket, use the `secure: true` option:
 
 ```elixir
-socket = Socket.Web.connect! "echo.websocket.org", secure: true
+socket = CozySocket.Web.connect! "echo.websocket.org", secure: true
 ```
 
 The `connect!` function also accepts other parameters, most notably the `path` parameter, which is used when the websocket server endpoint exists on a path below the domain ie. "example.com/websocket":
 
 ```elixir
-socket = Socket.Web.connect! "example.com", path: "/websocket"
+socket = CozySocket.Web.connect! "example.com", path: "/websocket"
 ```
 
 Note that websocket servers send ping messages. A pong reply from your client tells the server to keep the connection open and to send more data. If your client doesn't send a pong reply then the server will close the connection. Here's an example of how to get get both the data you want and reply to a server's pings:
 
 ```elixir
-socket = Socket.Web.connect! "echo.websocket.org"
-case socket |> Socket.Web.recv! do
+socket = CozySocket.Web.connect! "echo.websocket.org"
+case socket |> CozySocket.Web.recv! do
   {:text, data} ->
     # process data
   {:ping, _ } ->
-    socket |> Socket.Web.send!({:pong, ""})
+    socket |> CozySocket.Web.send!({:pong, ""})
 end
 ```
 
-### Server
+#### Server
 
 ```elixir
-server = Socket.Web.listen! 80
-client = server |> Socket.Web.accept!
+server = CozySocket.Web.listen! 80
+client = server |> CozySocket.Web.accept!
 
 # here you can verify if you want to accept the request or not, call
-# `Socket.Web.close!` if you don't want to accept it, or else call
-# `Socket.Web.accept!`
-client |> Socket.Web.accept!
+# `CozySocket.Web.close!` if you don't want to accept it, or else call
+# `CozySocket.Web.accept!`
+client |> CozySocket.Web.accept!
 
 # echo the first message
-client |> Socket.Web.send!(client |> Socket.Web.recv!)
+client |> CozySocket.Web.send!(client |> CozySocket.Web.recv!)
 ```
