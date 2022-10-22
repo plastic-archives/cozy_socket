@@ -1,7 +1,7 @@
 defmodule CozySocket.MixProject do
   use Mix.Project
 
-  @version "0.3.13"
+  @version "0.4.0"
   @description "A socket handling library."
   @source_url "https://github.com/cozy-elixir/cozy_socket"
 

@@ -20,7 +20,7 @@ Adding `cozy_lark` to your list of dependencies in `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:cozy_socket, "~> 0.3"},
+    {:cozy_socket, "~> 0.4"},
   ]
 end
 ```
