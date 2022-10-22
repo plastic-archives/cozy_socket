@@ -2,8 +2,16 @@
 
 > A socket handling library.
 
-This library wraps `gen_tcp`, `gen_udp` and `gen_sctp`, `ssl` and implements
-websockets and socks.
+This library wraps:
+
+- `gen_tcp`
+- `gen_udp`
+- `gen_sctp`
+- `ssl`
+
+And, contains:
+
+- a implementation for [SOCKS](https://en.wikipedia.org/wiki/SOCKS).
 
 ## Installation
 
