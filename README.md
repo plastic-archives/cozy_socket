@@ -29,6 +29,10 @@ end
 
 For more information, see the [documentation](https://hexdocs.pm/cozy_socket).
 
+## TODO
+
+- [ ] add more tests
+
 # License
 
 Apache License 2.0
